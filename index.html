@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA PLAY - IPAM & Topologia de Enlaces L2</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        play: {
+                            50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0',
+                            500: '#22c55e', 600: '#16a34a', 700: '#15803d',
+                            800: '#166534', 900: '#14532d',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        .excel-table th,
+        .excel-table td {
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .excel-table th:last-child,
+        .excel-table td:last-child {
+            border-right: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #86efac;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #16a34a;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800 antialiased pb-10">
+
+    <!-- Header -->
+    <header class="bg-play-800 border-b-4 border-play-600 text-white shadow-lg sticky top-0 z-40">
+        <div
+            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center space-x-3">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-white text-play-700 flex items-center justify-center font-extrabold text-xl shadow-md border-2 border-play-200">
+                        <i class="fa-solid fa-tower-broadcast text-play-600"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h1 class="text-lg font-black tracking-tight text-white uppercase">SISTEMA <span
+                                    class="text-play-200">PLAY</span> IPAM CORE</h1>
+                            <span
+                                class="bg-play-700 text-play-100 text-[10px] font-mono px-2 py-0.5 rounded-full border border-play-500/40 font-bold">2026
+                                Engine</span>
+                        </div>
+                        <p class="text-2xs text-play-100/90 font-medium">Catálogo Integrado e Resolução de Enlaces</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2.5 w-full md:w-auto justify-end text-xs">
+                <button onclick="document.getElementById('fileUpload').click()"
+                    class="px-3 py-1.5 rounded-xl bg-white text-play-800 hover:bg-play-50 font-bold border border-play-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer">
+                    <i class="fa-solid fa-file-excel text-play-600"></i>
+                    <span>Carregar Planilha (.ODS / .XLSX)</span>
+                </button>
+                <input type="file" id="fileUpload" class="hidden" accept=".ods,.xlsx,.csv"
+                    onchange="window.handleFileSelect(event)">
+
+                <div class="h-5 w-px bg-play-700 hidden sm:block"></div>
+
+                <button onclick="window.exportCSV()"
+                    class="px-3 py-1.5 rounded-xl bg-play-700 hover:bg-play-600 text-white font-semibold transition border border-play-600 flex items-center space-x-1">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Exportar CSV</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+        <!-- Indicadores -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Total de Hosts</p>
+                    <h3 id="stat-total" class="text-xl font-black text-play-900 mt-0.5 font-mono">0</h3>
+                </div>
+                <div
+                    class="w-10 h-10 rounded-xl bg-play-100 text-play-700 border border-play-200 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-network-wired"></i>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Hosts Ativos</p>
+                    <h3 id="stat-online" class="text-xl font-black text-play-600 mt-0.5 font-mono">0</h3>
+                </div>
+                <div
+                    class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-signal"></i>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">POPs / Torres</p>
+                    <h3 id="stat-pops" class="text-xl font-black text-amber-600 mt-0.5 font-mono">0</h3>
+                </div>
+                <div
+                    class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-tower-cell"></i>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Faixas Sub-rede</p>
+                    <h3 id="stat-subnets" class="text-xl font-black text-slate-800 mt-0.5 font-mono">0</h3>
+                </div>
+                <div
+                    class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-sitemap"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros e Faixas -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+            <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
+                <div class="relative w-full sm:w-96">
+                    <i
+                        class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-play-600 text-xs"></i>
+                    <input type="text" id="search-input" onkeyup="window.applyFilters()"
+                        placeholder="Pesquisar IP, Rádio, POP, SSID..."
+                        class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-play-600 focus:ring-2 focus:ring-play-100 transition shadow-inner">
+                </div>
+                <button onclick="window.resetFilters()"
+                    class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center space-x-1">
+                    <i class="fa-solid fa-rotate-left"></i><span>Limpar Filtros</span>
+                </button>
+            </div>
+            <div class="pt-2 border-t border-slate-100">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Filtrar por Faixa IP:</p>
+                <div id="subnet-pills" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1"></div>
+            </div>
+        </div>
+
+        <!-- Grade Principal -->
+        <div class="bg-white border-2 border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <div
+                class="bg-play-50 border-b border-play-200 px-4 py-2 flex items-center justify-between text-xs font-semibold text-play-900">
+                <div class="flex items-center space-x-2"><i class="fa-solid fa-table text-play-700"></i><span>Catálogo
+                        de Hosts</span></div>
+                <div class="text-[11px] font-mono text-slate-500">Fonte: <span id="sync-source-label"
+                        class="text-play-700 font-bold">Base Local</span> | Exibindo: <span id="showing-count"
+                        class="text-play-700 font-bold">0</span> de <span id="total-count">0</span></div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs excel-table border-collapse">
+                    <thead
+                        class="bg-play-800 text-white font-extrabold uppercase text-[10px] tracking-wider sticky top-0 z-10">
+                        <tr>
+                            <th class="py-2.5 px-3 w-10 text-center bg-play-900 text-play-200 font-mono">#</th>
+                            <th class="py-2.5 px-4 font-mono">Endereço IP</th>
+                            <th class="py-2.5 px-4">Equipamento / Host</th>
+                            <th class="py-2.5 px-4 font-mono">Sub-rede</th>
+                            <th class="py-2.5 px-4">POP / Torre</th>
+                            <th class="py-2.5 px-4">Função / Tipo</th>
+                            <th class="py-2.5 px-4">SSID / Frequência</th>
+                            <th class="py-2.5 px-4 text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ip-table-body" class="divide-y divide-slate-200 bg-white font-mono text-xs"></tbody>
+                </table>
+            </div>
+            <div id="empty-state" class="hidden py-12 text-center space-y-2 bg-slate-50">
+                <p class="text-xs text-slate-500">Nenhum host encontrado com o filtro atual.</p>
+            </div>
+        </div>
+
+        <!-- Enlace e Diagnóstico Ping -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div
+                class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                    <div class="flex items-center space-x-2">
+                        <div
+                            class="w-7 h-7 rounded-lg bg-play-100 text-play-700 flex items-center justify-center text-xs font-bold">
+                            <i class="fa-solid fa-route"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Cadeia
+                                Hierárquica do Enlace (L2 Link Path)</h3>
+                            <p class="text-[10px] text-slate-500">POP / Switch ➔ AP Master ➔ ST Cliente ➔ Terminal Final
+                            </p>
+                        </div>
+                    </div>
+                    <span id="trace-badge"
+                        class="bg-play-100 text-play-800 text-[10px] font-mono px-2.5 py-1 rounded-lg border border-play-200 font-bold">Selecione
+                        um host</span>
+                </div>
+                <div id="traceOutputContainer" class="py-2">
+                    <p class="text-xs text-slate-400 italic">Clique no botão <span class="font-bold text-play-700"><i
+                                class="fa-solid fa-diagram-project"></i> Enlace</span> para desenhar a cadeia.</p>
+                </div>
+            </div>
+
+            <!-- Console de Ping Real -->
+            <div
+                class="bg-slate-900 text-emerald-400 rounded-2xl p-4 shadow-sm font-mono text-xs border border-slate-800 flex flex-col justify-between space-y-3">
+                <div>
+                    <div class="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-2 mb-2">
+                        <span class="font-bold text-slate-200 text-xs"><i
+                                class="fa-solid fa-terminal text-play-500 mr-1"></i> CMD Ping Probe (Execução
+                            Real)</span>
+                    </div>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="ping-input" placeholder="Ex: 172.16.150.182"
+                            class="bg-slate-800 text-white px-2.5 py-1.5 rounded-xl border border-slate-700 text-xs w-full focus:outline-none focus:border-play-500">
+                        <select id="ping-type"
+                            class="bg-slate-800 text-white px-2 py-1.5 rounded-xl border border-slate-700 text-xs focus:outline-none focus:border-play-500">
+                            <option value="4">4 Pacotes</option>
+                            <option value="continuous">Contínuo (-t)</option>
+                        </select>
+                        <button id="btn-ping" onclick="window.runPingTest()"
+                            class="bg-play-600 hover:bg-play-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow transition">Ping</button>
+                        <button id="btn-stop-ping" onclick="window.stopPingTest()"
+                            class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow transition hidden">Parar</button>
+                    </div>
+                    <div id="ping-output"
+                        class="h-32 overflow-y-auto bg-black/50 p-2.5 rounded-xl text-[10.5px] text-slate-300 space-y-1">
+                        <span class="text-slate-500">Aguardando disparo de pacotes...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Detalhes -->
+    <div id="modal-details"
+        class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
+        <div class="bg-white border-2 border-play-200 rounded-2xl max-w-lg w-full p-5 space-y-4 relative shadow-2xl">
+            <button onclick="window.closeModal('modal-details')"
+                class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-base"><i
+                    class="fa-solid fa-xmark"></i></button>
+            <div class="flex items-center space-x-3 border-b border-slate-100 pb-3">
+                <div
+                    class="w-10 h-10 rounded-xl bg-play-100 text-play-700 flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-radio"></i>
+                </div>
+                <div>
+                    <h3 id="details-title" class="text-sm font-extrabold text-slate-900">-</h3>
+                    <p id="details-ip-subtitle" class="text-xs font-mono font-bold text-play-700">0.0.0.0</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-xs font-sans">
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200"><span
+                        class="text-[10px] text-slate-400 font-bold uppercase block">Usuário</span><span id="det-user"
+                        class="font-mono font-bold text-slate-800">-</span></div>
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200"><span
+                        class="text-[10px] text-slate-400 font-bold uppercase block">Senha</span><span id="det-pass"
+                        class="font-mono font-bold text-slate-800">-</span></div>
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200"><span
+                        class="text-[10px] text-slate-400 font-bold uppercase block">Marca</span><span id="det-marca"
+                        class="font-semibold text-slate-800">-</span></div>
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200"><span
+                        class="text-[10px] text-slate-400 font-bold uppercase block">Modelo</span><span id="det-modelo"
+                        class="font-semibold text-slate-800">-</span></div>
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200"><span
+                        class="text-[10px] text-slate-400 font-bold uppercase block">Comunidade SNMP</span><span
+                        id="det-community" class="font-mono font-bold text-slate-800">-</span></div>
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200"><span
+                        class="text-[10px] text-slate-400 font-bold uppercase block">POP / Torre</span><span
+                        id="det-pop" class="font-semibold text-slate-800">-</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+    <script>
+        // Inicialização sem colisão de nomes com window.supabase
+        const SUPABASE_URL = "https://stkjuqcjlqgtrwmktixt.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0a2p1cWNqbHFndHJ3bWt0aXh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODQxMTEsImV4cCI6MjEwMzI2MDExMX0.qI8nQGOA-QQKCMeKb5yLHYgzQD7nuul18L5MtNkx3s4";
+        const sbClient = (window.supabase && typeof window.supabase.createClient === 'function')
+            ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+            : null;
+
+        let defaultDatabase = [
+            { ip: "172.18.100.2", name: "AP CONCHAL", user: "admin", pass: "play8074", marca: "MIKROTIK", community: "k1239q!$f", modelo: "LHG 5", pop: "CATANANT ESTRADA", role: "PTP", freq: "5260", country: "Australia", ssid: "AP CONCHAL", subnet: "172.18.100.0/24" },
+            { ip: "172.18.100.3", name: "ST CONCHAL", user: "admin", pass: "play8074", marca: "MIKROTIK", community: "k1239q!$f", modelo: "LHG 5", pop: "Conchal", role: "PTP", freq: "5260", country: "Australia", ssid: "AP CONCHAL", subnet: "172.18.100.0/24" },
+            { ip: "172.18.100.4", name: "Play 21", user: "ubnt", pass: "Play8074", marca: "ubiquiti", community: "k1239q!$f", modelo: "Rocket 5AC Prism", pop: "Conchal", role: "CELULA", freq: "5775", country: "", ssid: "PLAY21", subnet: "172.18.100.0/24" },
+            { ip: "172.18.100.20", name: "sw conchal", user: "admin", pass: "play8074", marca: "MIKROTIK", community: "k1239q!$f", modelo: "rb 750 gr2", pop: "Conchal", role: "SWT", freq: "", country: "", ssid: "Uplink", subnet: "172.18.100.0/24" },
+            { ip: "172.16.150.2", name: "SW-TORRE MANDIOCA", user: "admin", pass: "play8074", marca: "MIKROTIK", community: "k1239q!$f", modelo: "CRS326-24G-2S+", pop: "torre MANDIOCA", role: "SWT", freq: "", country: "", ssid: "Uplink", subnet: "172.16.150.0/24" },
+            { ip: "172.16.150.10", name: "ap laticinio", user: "ubnt", pass: "Play8074", marca: "ubiquiti", community: "k1239q!$f", modelo: "LiteBeam 5AC", pop: "capelinha", role: "PTP", freq: "5550", country: "Licensed", ssid: "AP LATICINIO", subnet: "172.16.150.0/24" },
+            { ip: "172.16.150.11", name: "st laticinio", user: "ubnt", pass: "Play8074", marca: "ubiquiti", community: "k1239q!$f", modelo: "lite bean ac", pop: "Torre laticinio", role: "PTP", freq: "5550", country: "Licensed", ssid: "AP LATICINIO", subnet: "172.16.150.0/24" },
+            { ip: "172.16.150.30", name: "PLAY LATICINIO", user: "ubnt", pass: "Play8074", marca: "ubiquiti", community: "k1239q!$f", modelo: "Rocket 5AC Lite", pop: "Torre laticinio", role: "CELULA", freq: "5755", country: "Licensed", ssid: "PLAY LATICINIO", subnet: "172.16.150.0/24" }
+        ];
+
+        let ipDatabase = defaultDatabase;
+        try {
+            const cached = localStorage.getItem("PLAY_IPAM_PERSISTED");
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    ipDatabase = parsed;
+                }
+            }
+        } catch (e) { }
+
+        let selectedSubnet = "ALL";
+        window.currentPingSource = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.renderSubnetPills();
+            window.renderCatalog();
+            window.updateMetrics();
+
+            // Busca do Supabase em segundo plano sem travar a interface
+            if (sbClient) {
+                sbClient.from('radio_hosts').select('*').then(({ data, error }) => {
+                    if (!error && Array.isArray(data) && data.length > 0) {
+                        ipDatabase = data.map(item => ({
+                            ip: item.ip,
+                            name: item.name || '',
+                            user: item.user_name || 'admin',
+                            pass: item.password || 'play8074',
+                            marca: item.marca || 'Ubiquiti',
+                            community: item.community || 'k1239q!$f',
+                            modelo: item.modelo || '',
+                            pop: item.pop || '',
+                            role: item.role || 'HOST',
+                            freq: item.freq || '',
+                            ssid: item.ssid || '',
+                            subnet: item.subnet || ''
+                        }));
+                        localStorage.setItem("PLAY_IPAM_PERSISTED", JSON.stringify(ipDatabase));
+                        window.renderSubnetPills();
+                        window.renderCatalog();
+                        window.updateMetrics();
+                        document.getElementById('sync-source-label').innerText = 'Supabase Cloud';
+                    }
+                }).catch(() => { });
+            }
+        });
+
+        window.renderSubnetPills = function () {
+            const dataSubnets = [...new Set(ipDatabase.map(item => item.subnet))].filter(Boolean).sort();
+            const container = document.getElementById('subnet-pills');
+            container.innerHTML = ["ALL", ...dataSubnets].map(s => `
+                <button onclick="window.setSubnetFilter('${s}')" class="px-2.5 py-1 rounded-lg text-xs font-semibold font-mono transition ${selectedSubnet === s ? 'bg-play-600 text-white shadow' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'}">
+                    ${s === 'ALL' ? 'Todas as Faixas' : s}
+                </button>
+            `).join('');
+        };
+
+        window.setSubnetFilter = function (subnet) {
+            selectedSubnet = subnet;
+            window.renderSubnetPills();
+            window.renderCatalog();
+        };
+
+        window.renderCatalog = function () {
+            const searchVal = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
+            const filtered = ipDatabase.filter(item => {
+                const matchesSearch = !searchVal || item.ip.toLowerCase().includes(searchVal) || item.name.toLowerCase().includes(searchVal) || (item.pop && item.pop.toLowerCase().includes(searchVal)) || (item.ssid && item.ssid.toLowerCase().includes(searchVal));
+                const matchesSubnet = selectedSubnet === 'ALL' || item.subnet === selectedSubnet;
+                return matchesSearch && matchesSubnet;
+            });
+
+            document.getElementById('showing-count').innerText = filtered.length;
+            document.getElementById('total-count').innerText = ipDatabase.length;
+
+            const tableBody = document.getElementById('ip-table-body');
+            const emptyState = document.getElementById('empty-state');
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            tableBody.innerHTML = filtered.map((item, index) => {
+                const roleBadge = window.getRoleBadge(item.role, item.name);
+                return `
+                    <tr class="hover:bg-play-50/70 transition group cursor-pointer" onclick="window.openDetailsModal('${item.ip}')">
+                        <td class="py-2.5 px-3 text-center text-[10px] font-bold text-slate-400 bg-slate-50">${index + 1}</td>
+                        <td class="py-2.5 px-4 font-bold text-play-900">
+                            <div class="flex items-center space-x-1.5">
+                                <button onclick="event.stopPropagation(); window.copyToClipboard('${item.ip}')" class="p-1 hover:bg-play-100 rounded text-play-700 transition" title="Copiar IP"><i class="fa-regular fa-copy"></i></button>
+                                <span>${item.ip}</span>
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-4 font-semibold text-slate-800 font-sans"><div>${item.name}</div></td>
+                        <td class="py-2.5 px-4 text-slate-600 font-mono text-[11px]">${item.subnet}</td>
+                        <td class="py-2.5 px-4 text-slate-700 font-sans font-medium">${item.pop || '-'}</td>
+                        <td class="py-2.5 px-4 font-sans">${roleBadge}</td>
+                        <td class="py-2.5 px-4 text-slate-600 font-sans font-medium text-[11px]">${item.ssid ? `<span class="text-play-800 font-bold font-mono">${item.ssid}</span> (${item.freq || '5.8G'})` : '-'}</td>
+                        <td class="py-2.5 px-4 text-center">
+                            <div class="flex items-center justify-center space-x-1 font-sans">
+                                <button onclick="event.stopPropagation(); window.traceL2Link('${item.ip}')" class="px-2 py-1 bg-play-100 hover:bg-play-200 text-play-800 font-bold rounded-lg text-[10px] transition border border-play-300"><i class="fa-solid fa-diagram-project"></i> Enlace</button>
+                                <button onclick="event.stopPropagation(); window.selectForPing('${item.ip}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-[10px] transition border border-slate-300"><i class="fa-solid fa-terminal"></i> Ping</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        window.getRoleBadge = function (role, name) {
+            const r = (role || '').toUpperCase(); const n = (name || '').toUpperCase();
+            if (r.includes('SW') || n.startsWith('SW')) return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-300">Switch</span>`;
+            if (r.includes('AP') || n.startsWith('AP')) return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">AP Master</span>`;
+            if (r.includes('ST') || n.startsWith('ST')) return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">ST Cliente</span>`;
+            return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-play-100 text-play-800 border border-play-300">Play Terminal</span>`;
+        };
+
+        window.traceL2Link = function (targetIp) {
+            const target = ipDatabase.find(h => h.ip === targetIp);
+            if (!target) return;
+            document.getElementById('trace-badge').innerText = `${target.name} (${target.ip})`;
+            const container = document.getElementById('traceOutputContainer');
+            const subnetHosts = ipDatabase.filter(h => h.subnet === target.subnet);
+
+            const swt = subnetHosts.find(h => h.role === 'SWT' || (h.name && h.name.toUpperCase().startsWith('SW'))) || { name: `SWT ${target.pop || 'CORE'}`, ip: target.subnet.replace('.0/24', '.2'), marca: 'MIKROTIK' };
+            const ap = subnetHosts.find(h => (h.role === 'AP' || (h.name && h.name.toUpperCase().startsWith('AP'))) && (h.ssid === target.ssid || !target.ssid)) || { name: `AP ${target.pop || 'MASTER'}`, ip: target.subnet.replace('.0/24', '.3'), ssid: target.ssid || 'PTP', freq: target.freq || '5.8G' };
+
+            let st = null;
+            if (target.role === 'PLAY' || target.name.toUpperCase().includes('PLAY') || target.role === 'ST') {
+                st = subnetHosts.find(h => (h.role === 'ST' || (h.name && h.name.toUpperCase().startsWith('ST'))) && h.ssid === target.ssid && h.ip !== target.ip);
+            }
+
+            const hops = [
+                { step: 1, stage: "POP / Origem", name: swt.name, ip: swt.ip, detail: `Switch L2 | POP: ${target.pop || 'Central'}` },
+                { step: 2, stage: "AP Transmissor", name: ap.name, ip: ap.ip, detail: `SSID: ${ap.ssid || target.ssid || 'PTP-PLAY'} | Freq: ${ap.freq || target.freq || '5.8G'}` }
+            ];
+
+            if (st && st.ip !== target.ip) { hops.push({ step: 3, stage: "ST Cliente", name: st.name, ip: st.ip, detail: `Estação Receptora` }); }
+            hops.push({ step: hops.length + 1, stage: "Destino Final", name: target.name, ip: target.ip, detail: `Endpoint: ${target.role || 'Terminal'}` });
+
+            container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-${hops.length} gap-2.5 font-sans">${hops.map((h, i) => `
+                <div class="bg-white border ${i === hops.length - 1 ? 'border-play-500 ring-2 ring-play-100 bg-play-50/30' : 'border-slate-200'} p-3 rounded-xl shadow-sm text-center">
+                    <div class="text-[9px] uppercase font-bold text-slate-400">Salto ${h.step}: ${h.stage}</div>
+                    <div class="font-extrabold text-xs text-slate-800 mt-1 truncate">${h.name}</div>
+                    <div class="text-[11px] font-mono text-play-700 font-bold mt-0.5">${h.ip}</div>
+                    <div class="text-[10px] text-slate-500 mt-2 bg-slate-50 border border-slate-200 p-1 rounded-lg">${h.detail}</div>
+                </div>`).join('')}</div>`;
+        };
+
+        window.selectForPing = function (ip) {
+            document.getElementById('ping-input').value = ip;
+            window.runPingTest();
+        };
+
+        window.runPingTest = function () {
+            const selectedIp = document.getElementById('ping-input').value.trim();
+            const pingType = document.getElementById('ping-type').value;
+            const output = document.getElementById('ping-output');
+
+            if (!selectedIp) return;
+            if (window.currentPingSource) window.currentPingSource.close();
+
+            output.innerHTML = `<div class="text-amber-300">$ ping ${pingType === 'continuous' ? '-t' : '-n ' + pingType} ${selectedIp}</div>`;
+            document.getElementById('btn-ping').classList.add('hidden');
+            document.getElementById('btn-stop-ping').classList.remove('hidden');
+
+            const url = `http://127.0.0.1:5555/api/ping?ip=${encodeURIComponent(selectedIp)}&count=${pingType}`;
+            window.currentPingSource = new EventSource(url);
+
+            window.currentPingSource.onmessage = function (event) {
+                if (event.data === '[DONE]') { window.stopPingTest(); return; }
+                let textColor = 'text-slate-300';
+                const lower = event.data.toLowerCase();
+                if (lower.includes('resposta de') || lower.includes('bytes from')) textColor = 'text-emerald-400 font-bold';
+                if (lower.includes('esgotado') || lower.includes('falha') || lower.includes('timeout') || lower.includes('inacess')) textColor = 'text-red-400';
+                if (lower.includes('estat') || lower.includes('disparando')) textColor = 'text-play-300 font-bold';
+                output.innerHTML += `<div class="${textColor}">${event.data}</div>`;
+                output.scrollTop = output.scrollHeight;
+            };
+
+            window.currentPingSource.onerror = function () {
+                output.innerHTML += `<div class="text-red-500 mt-2 font-bold">[Aviso] Servidor Python offline na porta 5555. Execute no terminal: python server.py</div>`;
+                output.scrollTop = output.scrollHeight;
+                window.stopPingTest();
+            };
+        };
+
+        window.stopPingTest = function () {
+            if (window.currentPingSource) {
+                window.currentPingSource.close();
+                window.currentPingSource = null;
+                const output = document.getElementById('ping-output');
+                output.innerHTML += `<div class="text-slate-400 mt-1 italic">Ping finalizado.</div>`;
+                output.scrollTop = output.scrollHeight;
+            }
+            document.getElementById('btn-ping').classList.remove('hidden');
+            document.getElementById('btn-stop-ping').classList.add('hidden');
+        };
+
+        // Leitor funcional idêntico com envio seguro ao Supabase
+        window.handleFileSelect = function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            window.showToast('Processando planilha...');
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const imported = [];
+
+                    workbook.SheetNames.forEach(sheetName => {
+                        const jsonRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+                        jsonRows.forEach(row => {
+                            if (!row || !Array.isArray(row) || row.length < 2) return;
+
+                            let ipFound = null;
+                            let ipColIdx = -1;
+                            for (let i = 0; i < row.length; i++) {
+                                const val = String(row[i] || '').trim();
+                                const match = val.match(/\b(?:172\.(?:1[6-9]|2[0-9]|3[01])|10\.\d{1,3}|192\.168|38\.190)\.\d{1,3}\.\d{1,3}\b/);
+                                if (match) {
+                                    ipFound = match[0];
+                                    ipColIdx = i;
+                                    break;
+                                }
+                            }
+
+                            if (ipFound) {
+                                const octs = ipFound.split('.');
+                                const name = ipColIdx > 0 ? String(row[0] || '').trim() : `HOST_${octs[3]}`;
+                                imported.push({
+                                    ip: ipFound,
+                                    name: name || `HOST_${octs[3]}`,
+                                    user: String(row[2] || 'admin').trim(),
+                                    pass: String(row[3] || 'play8074').trim(),
+                                    marca: String(row[4] || 'Ubiquiti').trim(),
+                                    community: String(row[5] || 'k1239q!$f').trim(),
+                                    modelo: String(row[6] || '').trim(),
+                                    pop: String(row[7] || sheetName).trim(),
+                                    role: String(row[8] || 'HOST').trim(),
+                                    freq: String(row[9] || '').trim(),
+                                    ssid: String(row[11] || row[12] || '').trim(),
+                                    subnet: `${octs[0]}.${octs[1]}.${octs[2]}.0/24`
+                                });
+                            }
+                        });
+                    });
+
+                    if (imported.length > 0) {
+                        ipDatabase = imported;
+                        localStorage.setItem("PLAY_IPAM_PERSISTED", JSON.stringify(ipDatabase));
+                        selectedSubnet = 'ALL';
+                        window.renderSubnetPills();
+                        window.renderCatalog();
+                        window.updateMetrics();
+                        window.showToast(`${imported.length} hosts carregados e salvos localmente!`);
+                        event.target.value = '';
+
+                        // Gravação em segundo plano no Supabase
+                        if (sbClient) {
+                            const supaData = imported.map(item => ({
+                                ip: item.ip,
+                                name: item.name,
+                                user_name: item.user,
+                                password: item.pass,
+                                marca: item.marca,
+                                community: item.community,
+                                modelo: item.modelo,
+                                pop: item.pop,
+                                role: item.role,
+                                freq: item.freq,
+                                ssid: item.ssid,
+                                subnet: item.subnet
+                            }));
+
+                            for (let i = 0; i < supaData.length; i += 50) {
+                                const chunk = supaData.slice(i, i + 50);
+                                sbClient.from('radio_hosts').upsert(chunk, { onConflict: 'ip' }).catch(() => { });
+                            }
+                        }
+                    } else {
+                        window.showToast('Nenhum IP válido encontrado na planilha.');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    window.showToast('Erro ao ler formato do arquivo.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        window.openDetailsModal = function (ip) {
+            const item = ipDatabase.find(h => h.ip === ip);
+            if (!item) return;
+            document.getElementById('details-title').innerText = item.name;
+            document.getElementById('details-ip-subtitle').innerText = item.ip;
+            document.getElementById('det-user').innerText = item.user || '-';
+            document.getElementById('det-pass').innerText = item.pass || '-';
+            document.getElementById('det-marca').innerText = item.marca || '-';
+            document.getElementById('det-modelo').innerText = item.modelo || '-';
+            document.getElementById('det-community').innerText = item.community || 'k1239q!$f';
+            document.getElementById('det-pop').innerText = item.pop || '-';
+            document.getElementById('modal-details').classList.remove('hidden');
+        };
+
+        window.closeModal = function (modalId) { document.getElementById(modalId).classList.add('hidden'); };
+        window.applyFilters = function () { window.renderCatalog(); };
+        window.resetFilters = function () {
+            document.getElementById('search-input').value = '';
+            selectedSubnet = 'ALL';
+            window.renderSubnetPills();
+            window.renderCatalog();
+        };
+
+        window.updateMetrics = function () {
+            document.getElementById('stat-total').innerText = ipDatabase.length;
+            document.getElementById('stat-online').innerText = ipDatabase.length;
+            document.getElementById('stat-pops').innerText = new Set(ipDatabase.map(i => i.pop)).size;
+            document.getElementById('stat-subnets').innerText = new Set(ipDatabase.map(i => i.subnet)).size;
+        };
+
+        window.copyToClipboard = function (text) {
+            navigator.clipboard.writeText(text);
+            window.showToast(`IP ${text} copiado!`);
+        };
+
+        window.exportCSV = function () {
+            const headers = ['IP', 'Nome', 'Subrede', 'POP', 'Role', 'SSID', 'Frequencia', 'Modelo', 'Marca', 'Comunidade'];
+            const rows = ipDatabase.map(i => [i.ip, `"${i.name}"`, i.subnet, `"${i.pop || ''}"`, `"${i.role || ''}"`, `"${i.ssid || ''}"`, `"${i.freq || ''}"`, `"${i.modelo || ''}"`, `"${i.marca || ''}"`, `"${i.community || ''}"`]);
+            const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+            const link = document.createElement('a');
+            link.setAttribute('href', encodeURI(csvContent));
+            link.setAttribute('download', `Catalogo_Play_${Date.now()}.csv`);
+            document.body.appendChild(link); link.click(); link.remove();
+        };
+
+        window.showToast = function (message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'bg-slate-900 text-white border border-play-500 px-4 py-2.5 rounded-xl shadow-xl text-xs font-bold flex items-center space-x-2 transition-all duration-300 transform translate-y-2 opacity-0';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-play-500 mr-2"></i>${message}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 50);
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 3000);
+        };
+    </script>
+</body>
+
+</html>
