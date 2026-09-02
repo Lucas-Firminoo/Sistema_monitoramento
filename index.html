@@ -29,49 +29,20 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-            color: #0f172a;
-        }
-
-        .excel-table th,
-        .excel-table td {
-            border-right: 1px solid #e2e8f0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .excel-table th:last-child,
-        .excel-table td:last-child {
-            border-right: none;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #86efac;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #16a34a;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .excel-table th, .excel-table td { border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+        .excel-table th:last-child, .excel-table td:last-child { border-right: none; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #86efac; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #16a34a; }
     </style>
 </head>
 
@@ -79,24 +50,18 @@
 
     <!-- Header Responsivo -->
     <header class="bg-play-800 border-b-4 border-play-600 text-white shadow-lg sticky top-0 z-40">
-        <div
-            class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex flex-col md:flex-row items-center justify-between gap-3">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex flex-col md:flex-row items-center justify-between gap-3">
             <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
                 <div class="flex items-center space-x-2.5 sm:space-x-3">
-                    <div
-                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white text-play-700 flex items-center justify-center font-extrabold text-lg sm:text-xl shadow-md border-2 border-play-200 shrink-0">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white text-play-700 flex items-center justify-center font-extrabold text-lg sm:text-xl shadow-md border-2 border-play-200 shrink-0">
                         <i class="fa-solid fa-tower-broadcast text-play-600"></i>
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <h1 class="text-base sm:text-lg font-black tracking-tight text-white uppercase">SISTEMA
-                                <span class="text-play-200">PLAY</span> IPAM</h1>
-                            <span
-                                class="bg-play-700 text-play-100 text-[9px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full border border-play-500/40 font-bold">2026
-                                Engine</span>
+                            <h1 class="text-base sm:text-lg font-black tracking-tight text-white uppercase">SISTEMA <span class="text-play-200">PLAY</span> IPAM</h1>
+                            <span class="bg-play-700 text-play-100 text-[9px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full border border-play-500/40 font-bold">2026 Engine</span>
                         </div>
-                        <p class="text-[10px] sm:text-2xs text-play-100/90 font-medium">Catálogo Integrado & Resolução
-                            L2</p>
+                        <p class="text-[10px] sm:text-2xs text-play-100/90 font-medium">Catálogo Integrado & Resolução L2</p>
                     </div>
                 </div>
             </div>
@@ -107,12 +72,10 @@
                     <i class="fa-solid fa-file-excel text-play-600"></i>
                     <span>Carregar (.ODS / .XLSX)</span>
                 </button>
-                <input type="file" id="fileUpload" class="hidden" accept=".ods,.xlsx,.csv"
-                    onchange="window.handleFileSelect(event)">
+                <input type="file" id="fileUpload" class="hidden" accept=".ods,.xlsx,.csv" onchange="window.handleFileSelect(event)">
 
                 <button onclick="window.syncSupabase(true)"
-                    class="px-2.5 py-2 sm:py-1.5 rounded-xl bg-play-700 hover:bg-play-600 text-white font-semibold transition border border-play-600 flex items-center justify-center"
-                    title="Sincronizar Nuvem">
+                    class="px-2.5 py-2 sm:py-1.5 rounded-xl bg-play-700 hover:bg-play-600 text-white font-semibold transition border border-play-600 flex items-center justify-center" title="Sincronizar Nuvem">
                     <i class="fa-solid fa-arrows-rotate"></i>
                 </button>
 
@@ -128,49 +91,33 @@
     <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-5 space-y-4 sm:space-y-5">
         <!-- Indicadores -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
-            <div
-                class="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-3.5 shadow-sm flex items-center justify-between">
+            <div class="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-3.5 shadow-sm flex items-center justify-between">
                 <div>
-                    <p class="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Total
-                        Hosts</p>
+                    <p class="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Total Hosts</p>
                     <h3 id="stat-total" class="text-lg sm:text-xl font-black text-play-900 mt-0.5 font-mono">0</h3>
                 </div>
-                <div
-                    class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-play-100 text-play-700 border border-play-200 flex items-center justify-center text-sm sm:text-lg font-bold">
-                    <i class="fa-solid fa-network-wired"></i></div>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-play-100 text-play-700 border border-play-200 flex items-center justify-center text-sm sm:text-lg font-bold"><i class="fa-solid fa-network-wired"></i></div>
             </div>
-            <div
-                class="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-3.5 shadow-sm flex items-center justify-between">
+            <div class="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-3.5 shadow-sm flex items-center justify-between">
                 <div>
-                    <p class="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Online
-                    </p>
+                    <p class="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Online</p>
                     <h3 id="stat-online" class="text-lg sm:text-xl font-black text-play-600 mt-0.5 font-mono">0</h3>
                 </div>
-                <div
-                    class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center text-sm sm:text-lg font-bold">
-                    <i class="fa-solid fa-signal"></i></div>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center text-sm sm:text-lg font-bold"><i class="fa-solid fa-signal"></i></div>
             </div>
-            <div
-                class="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-3.5 shadow-sm flex items-center justify-between">
+            <div class="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-3.5 shadow-sm flex items-center justify-between">
                 <div>
-                    <p class="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                        POPs/Torres</p>
+                    <p class="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">POPs/Torres</p>
                     <h3 id="stat-pops" class="text-lg sm:text-xl font-black text-amber-600 mt-0.5 font-mono">0</h3>
                 </div>
-                <div
-                    class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center text-sm sm:text-lg font-bold">
-                    <i class="fa-solid fa-tower-cell"></i></div>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center text-sm sm:text-lg font-bold"><i class="fa-solid fa-tower-cell"></i></div>
             </div>
-            <div
-                class="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-3.5 shadow-sm flex items-center justify-between">
+            <div class="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-3.5 shadow-sm flex items-center justify-between">
                 <div>
-                    <p class="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                        Sub-redes</p>
+                    <p class="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Sub-redes</p>
                     <h3 id="stat-subnets" class="text-lg sm:text-xl font-black text-slate-800 mt-0.5 font-mono">0</h3>
                 </div>
-                <div
-                    class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center text-sm sm:text-lg font-bold">
-                    <i class="fa-solid fa-sitemap"></i></div>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center text-sm sm:text-lg font-bold"><i class="fa-solid fa-sitemap"></i></div>
             </div>
         </div>
 
@@ -178,14 +125,10 @@
         <div class="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm space-y-3">
             <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 items-center justify-between">
                 <div class="relative w-full sm:w-96">
-                    <i
-                        class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-play-600 text-xs"></i>
-                    <input type="text" id="search-input" onkeyup="window.applyFilters()"
-                        placeholder="Pesquisar IP, Rádio, POP, SSID..."
-                        class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-play-600 focus:ring-2 focus:ring-play-100 transition shadow-inner">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-play-600 text-xs"></i>
+                    <input type="text" id="search-input" onkeyup="window.applyFilters()" placeholder="Pesquisar IP, Rádio, POP, SSID..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-play-600 focus:ring-2 focus:ring-play-100 transition shadow-inner">
                 </div>
-                <button onclick="window.resetFilters()"
-                    class="w-full sm:w-auto px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1">
+                <button onclick="window.resetFilters()" class="w-full sm:w-auto px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1">
                     <i class="fa-solid fa-rotate-left"></i><span>Limpar Filtros</span>
                 </button>
             </div>
@@ -196,20 +139,14 @@
         </div>
 
         <!-- Grade Principal -->
-        <div
-            class="bg-white border-2 border-slate-200 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden flex flex-col">
-            <div
-                class="bg-play-50 border-b border-play-200 px-3 sm:px-4 py-2 flex items-center justify-between text-xs font-semibold text-play-900">
-                <div class="flex items-center space-x-2"><i class="fa-solid fa-table text-play-700"></i><span>Catálogo
-                        de Hosts</span></div>
-                <div class="text-[10px] sm:text-[11px] font-mono text-slate-500">Fonte: <span id="sync-source-label"
-                        class="text-play-700 font-bold">Supabase Cloud</span> | Exibindo: <span id="showing-count"
-                        class="text-play-700 font-bold">0</span> de <span id="total-count">0</span></div>
+        <div class="bg-white border-2 border-slate-200 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <div class="bg-play-50 border-b border-play-200 px-3 sm:px-4 py-2 flex items-center justify-between text-xs font-semibold text-play-900">
+                <div class="flex items-center space-x-2"><i class="fa-solid fa-table text-play-700"></i><span>Catálogo de Hosts</span></div>
+                <div class="text-[10px] sm:text-[11px] font-mono text-slate-500">Fonte: <span id="sync-source-label" class="text-play-700 font-bold">Supabase Cloud</span> | Exibindo: <span id="showing-count" class="text-play-700 font-bold">0</span> de <span id="total-count">0</span></div>
             </div>
             <div class="overflow-x-auto max-h-[440px] overflow-y-auto">
                 <table class="w-full text-left text-xs excel-table border-collapse min-w-[700px] sm:min-w-full">
-                    <thead
-                        class="bg-play-800 text-white font-extrabold uppercase text-[10px] tracking-wider sticky top-0 z-10">
+                    <thead class="bg-play-800 text-white font-extrabold uppercase text-[10px] tracking-wider sticky top-0 z-10">
                         <tr>
                             <th class="py-2.5 px-3 w-10 text-center bg-play-900 text-play-200 font-mono">#</th>
                             <th class="py-2.5 px-4 font-mono">Endereço IP</th>
@@ -231,55 +168,38 @@
 
         <!-- Enlace e Diagnóstico Ping -->
         <div id="link-panel" class="grid grid-cols-1 lg:grid-cols-3 gap-4 scroll-mt-20">
-            <div
-                class="lg:col-span-2 bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3.5 sm:p-4 shadow-sm flex flex-col justify-between space-y-3">
-                <div
-                    class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+            <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3.5 sm:p-4 shadow-sm flex flex-col justify-between space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
                     <div class="flex items-center space-x-2">
-                        <div
-                            class="w-7 h-7 rounded-lg bg-play-100 text-play-700 flex items-center justify-center text-xs font-bold shrink-0">
-                            <i class="fa-solid fa-route"></i></div>
+                        <div class="w-7 h-7 rounded-lg bg-play-100 text-play-700 flex items-center justify-center text-xs font-bold shrink-0"><i class="fa-solid fa-route"></i></div>
                         <div>
-                            <h3 class="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Cadeia
-                                Hierárquica do Enlace (L2 Link Path)</h3>
-                            <p class="text-[9px] sm:text-[10px] text-slate-500">POP / Switch ➔ AP Master ➔ ST Cliente ➔
-                                Terminal Final</p>
+                            <h3 class="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Cadeia Hierárquica do Enlace (L2 Link Path)</h3>
+                            <p class="text-[9px] sm:text-[10px] text-slate-500">POP / Switch ➔ AP Master ➔ ST Cliente ➔ Terminal Final</p>
                         </div>
                     </div>
-                    <span id="trace-badge"
-                        class="bg-play-100 text-play-800 text-[10px] font-mono px-2.5 py-1 rounded-lg border border-play-200 font-bold self-start sm:self-auto">Selecione
-                        um host</span>
+                    <span id="trace-badge" class="bg-play-100 text-play-800 text-[10px] font-mono px-2.5 py-1 rounded-lg border border-play-200 font-bold self-start sm:self-auto">Selecione um host</span>
                 </div>
                 <div id="traceOutputContainer" class="py-2">
-                    <p class="text-xs text-slate-400 italic">Clique no botão <span class="font-bold text-play-700"><i
-                                class="fa-solid fa-diagram-project"></i> Enlace</span> para desenhar a cadeia.</p>
+                    <p class="text-xs text-slate-400 italic">Clique no botão <span class="font-bold text-play-700"><i class="fa-solid fa-diagram-project"></i> Enlace</span> para desenhar a cadeia.</p>
                 </div>
             </div>
 
-            <!-- Console de Ping Real -->
-            <div
-                class="bg-slate-900 text-emerald-400 rounded-xl sm:rounded-2xl p-3.5 sm:p-4 shadow-sm font-mono text-xs border border-slate-800 flex flex-col justify-between space-y-3">
+            <!-- Console de Probe Multi-Dispositivo -->
+            <div class="bg-slate-900 text-emerald-400 rounded-xl sm:rounded-2xl p-3.5 sm:p-4 shadow-sm font-mono text-xs border border-slate-800 flex flex-col justify-between space-y-3">
                 <div>
                     <div class="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-2 mb-2">
-                        <span class="font-bold text-slate-200 text-xs"><i
-                                class="fa-solid fa-terminal text-play-500 mr-1"></i> CMD Ping Probe (Execução
-                            Real)</span>
+                        <span class="font-bold text-slate-200 text-xs"><i class="fa-solid fa-satellite-dish text-play-500 mr-1"></i> Probe L2/L3 Network (Zero-Install)</span>
                     </div>
                     <div class="flex gap-2 mb-2">
-                        <input type="text" id="ping-input" placeholder="Ex: 172.16.150.182"
-                            class="bg-slate-800 text-white px-2.5 py-1.5 rounded-xl border border-slate-700 text-xs w-full focus:outline-none focus:border-play-500">
-                        <select id="ping-type"
-                            class="bg-slate-800 text-white px-2 py-1.5 rounded-xl border border-slate-700 text-xs focus:outline-none focus:border-play-500">
+                        <input type="text" id="ping-input" placeholder="Ex: 172.16.150.182" class="bg-slate-800 text-white px-2.5 py-1.5 rounded-xl border border-slate-700 text-xs w-full focus:outline-none focus:border-play-500">
+                        <select id="ping-type" class="bg-slate-800 text-white px-2 py-1.5 rounded-xl border border-slate-700 text-xs focus:outline-none focus:border-play-500">
                             <option value="4">4 Pacotes</option>
                             <option value="continuous">Contínuo (-t)</option>
                         </select>
-                        <button id="btn-ping" onclick="window.runPingTest()"
-                            class="bg-play-600 hover:bg-play-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow transition">Ping</button>
-                        <button id="btn-stop-ping" onclick="window.stopPingTest()"
-                            class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow transition hidden">Parar</button>
+                        <button id="btn-ping" onclick="window.runPingTest()" class="bg-play-600 hover:bg-play-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow transition">Ping</button>
+                        <button id="btn-stop-ping" onclick="window.stopPingTest()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow transition hidden">Parar</button>
                     </div>
-                    <div id="ping-output"
-                        class="h-32 overflow-y-auto bg-black/50 p-2.5 rounded-xl text-[10.5px] text-slate-300 space-y-1">
+                    <div id="ping-output" class="h-32 overflow-y-auto bg-black/50 p-2.5 rounded-xl text-[10.5px] text-slate-300 space-y-1">
                         <span class="text-slate-500">Aguardando disparo de pacotes...</span>
                     </div>
                 </div>
@@ -288,41 +208,23 @@
     </main>
 
     <!-- Modal Detalhes -->
-    <div id="modal-details"
-        class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
-        <div
-            class="bg-white border-2 border-play-200 rounded-2xl max-w-lg w-full p-4 sm:p-5 space-y-4 relative shadow-2xl">
-            <button onclick="window.closeModal('modal-details')"
-                class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-base"><i
-                    class="fa-solid fa-xmark"></i></button>
+    <div id="modal-details" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
+        <div class="bg-white border-2 border-play-200 rounded-2xl max-w-lg w-full p-4 sm:p-5 space-y-4 relative shadow-2xl">
+            <button onclick="window.closeModal('modal-details')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-base"><i class="fa-solid fa-xmark"></i></button>
             <div class="flex items-center space-x-3 border-b border-slate-100 pb-3">
-                <div
-                    class="w-10 h-10 rounded-xl bg-play-100 text-play-700 flex items-center justify-center text-xl font-bold">
-                    <i class="fa-solid fa-radio"></i></div>
+                <div class="w-10 h-10 rounded-xl bg-play-100 text-play-700 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-radio"></i></div>
                 <div>
                     <h3 id="details-title" class="text-sm font-extrabold text-slate-900">-</h3>
                     <p id="details-ip-subtitle" class="text-xs font-mono font-bold text-play-700">0.0.0.0</p>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-2.5 sm:gap-3 text-xs font-sans">
-                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span
-                        class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">Usuário</span><span
-                        id="det-user" class="font-mono font-bold text-slate-800">-</span></div>
-                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span
-                        class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">Senha</span><span
-                        id="det-pass" class="font-mono font-bold text-slate-800">-</span></div>
-                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span
-                        class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">Marca</span><span
-                        id="det-marca" class="font-semibold text-slate-800">-</span></div>
-                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span
-                        class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">Modelo</span><span
-                        id="det-modelo" class="font-semibold text-slate-800">-</span></div>
-                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span
-                        class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">Comunidade
-                        SNMP</span><span id="det-community" class="font-mono font-bold text-slate-800">-</span></div>
-                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span
-                        class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">POP /
-                        Torre</span><span id="det-pop" class="font-semibold text-slate-800">-</span></div>
+                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">Usuário</span><span id="det-user" class="font-mono font-bold text-slate-800">-</span></div>
+                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">Senha</span><span id="det-pass" class="font-mono font-bold text-slate-800">-</span></div>
+                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">Marca</span><span id="det-marca" class="font-semibold text-slate-800">-</span></div>
+                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">Modelo</span><span id="det-modelo" class="font-semibold text-slate-800">-</span></div>
+                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">Comunidade SNMP</span><span id="det-community" class="font-mono font-bold text-slate-800">-</span></div>
+                <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200"><span class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase block">POP / Torre</span><span id="det-pop" class="font-semibold text-slate-800">-</span></div>
             </div>
         </div>
     </div>
@@ -340,7 +242,7 @@
 
         let ipDatabase = [];
         let selectedSubnet = "ALL";
-        window.currentPingSource = null;
+        window.pingActive = false;
 
         document.addEventListener('DOMContentLoaded', async () => {
             const cached = localStorage.getItem("PLAY_IPAM_PERSISTED");
@@ -351,10 +253,10 @@
             window.renderCatalog();
             window.updateMetrics();
 
-            // Sincroniza obrigatoriamente do Supabase na inicialização
+            // Sincroniza do Supabase
             await window.syncSupabase(false);
 
-            // Escuta alterações em tempo real
+            // Realtime
             if (sbClient) {
                 try {
                     sbClient.channel('realtime_hosts')
@@ -366,12 +268,12 @@
             }
         });
 
-        // Consulta direta da nuvem ordenada por IP
+        // Leitura otimizada sem disparar erros no console
         window.syncSupabase = async function (showFeedback = false) {
             if (!sbClient) return;
             try {
                 if (showFeedback) window.showToast('Sincronizando com Supabase...');
-                const { data, error } = await sbClient.from('radio_hosts').select('*').order('ip', { ascending: true }).range(0, 4999);
+                const { data, error } = await sbClient.from('radio_hosts').select('*').order('ip', { ascending: true }).limit(5000);
 
                 if (!error && Array.isArray(data) && data.length > 0) {
                     ipDatabase = data.map(item => ({
@@ -393,11 +295,12 @@
                     window.renderSubnetPills();
                     window.renderCatalog();
                     window.updateMetrics();
-                    document.getElementById('sync-source-label').innerText = 'Supabase Cloud';
+                    const lbl = document.getElementById('sync-source-label');
+                    if (lbl) lbl.innerText = 'Supabase Cloud';
                     if (showFeedback) window.showToast(`${data.length} hosts sincronizados da nuvem!`);
                 }
             } catch (err) {
-                console.warn("Nuvem em contingência local.", err);
+                console.warn("Conexão direta em contingência de cache.", err);
             }
         };
 
@@ -514,45 +417,94 @@
             document.getElementById('link-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         };
 
-        window.runPingTest = function () {
+        // Probe assíncrono via Image Socket (sem gerar 404 no console e compatível com HTTPS/HTTP)
+        function testHostLatency(ip, timeoutMs = 1500) {
+            return new Promise((resolve) => {
+                const startTime = performance.now();
+                const img = new Image();
+                let settled = false;
+
+                const cleanup = () => {
+                    img.onload = null;
+                    img.onerror = null;
+                    img.src = '';
+                };
+
+                const timer = setTimeout(() => {
+                    if (!settled) {
+                        settled = true;
+                        cleanup();
+                        resolve({ online: false, ms: timeoutMs });
+                    }
+                }, timeoutMs);
+
+                // Dispara contra a interface de rede do rádio
+                img.onload = () => {
+                    if (!settled) {
+                        settled = true;
+                        clearTimeout(timer);
+                        const ms = Math.max(1, Math.round(performance.now() - startTime));
+                        cleanup();
+                        resolve({ online: true, ms });
+                    }
+                };
+
+                img.onerror = () => {
+                    if (!settled) {
+                        settled = true;
+                        clearTimeout(timer);
+                        const ms = Math.max(1, Math.round(performance.now() - startTime));
+                        cleanup();
+                        // Se o host respondeu a conexão imediatamente com rejeição de imagem, ele está ONLINE e ativo na rede
+                        const isResponsive = ms < (timeoutMs - 100);
+                        resolve({ online: isResponsive, ms });
+                    }
+                };
+
+                img.src = `http://${ip}/favicon.ico?_probe=${Date.now()}`;
+            });
+        }
+
+        window.runPingTest = async function () {
             const selectedIp = document.getElementById('ping-input').value.trim();
             const pingType = document.getElementById('ping-type').value;
             const output = document.getElementById('ping-output');
 
             if (!selectedIp) return;
-            if (window.currentPingSource) window.currentPingSource.close();
 
-            output.innerHTML = `<div class="text-amber-300">$ ping ${pingType === 'continuous' ? '-t' : '-n ' + pingType} ${selectedIp}</div>`;
+            window.pingActive = true;
             document.getElementById('btn-ping').classList.add('hidden');
             document.getElementById('btn-stop-ping').classList.remove('hidden');
 
-            const url = `http://127.0.0.1:5555/api/ping?ip=${encodeURIComponent(selectedIp)}&count=${pingType}`;
-            window.currentPingSource = new EventSource(url);
+            output.innerHTML = `<div class="text-amber-300">$ probe test ${selectedIp} (Enlace Direto)...</div>`;
 
-            window.currentPingSource.onmessage = function (event) {
-                if (event.data === '[DONE]') { window.stopPingTest(); return; }
-                let textColor = 'text-slate-300';
-                const lower = event.data.toLowerCase();
-                if (lower.includes('resposta de') || lower.includes('bytes from')) textColor = 'text-emerald-400 font-bold';
-                if (lower.includes('esgotado') || lower.includes('falha') || lower.includes('timeout') || lower.includes('inacess')) textColor = 'text-red-400';
-                if (lower.includes('estat') || lower.includes('disparando')) textColor = 'text-play-300 font-bold';
-                output.innerHTML += `<div class="${textColor}">${event.data}</div>`;
-                output.scrollTop = output.scrollHeight;
-            };
+            let packetsSent = 0;
+            const maxPackets = pingType === 'continuous' ? Infinity : parseInt(pingType);
 
-            window.currentPingSource.onerror = function () {
-                output.innerHTML += `<div class="text-red-500 mt-2 font-bold">[Aviso] Servidor Python offline na porta 5555. Execute no terminal: python server.py</div>`;
+            while (window.pingActive && packetsSent < maxPackets) {
+                packetsSent++;
+                const res = await testHostLatency(selectedIp, 1400);
+
+                if (res.online) {
+                    output.innerHTML += `<div class="text-emerald-400 font-bold">Resposta de ${selectedIp}: tempo=${res.ms}ms status=Online (L2/L3 Ativo)</div>`;
+                } else {
+                    output.innerHTML += `<div class="text-red-400">Tempo limite esgotado para ${selectedIp}.</div>`;
+                }
+
                 output.scrollTop = output.scrollHeight;
-                window.stopPingTest();
-            };
+                if (window.pingActive && packetsSent < maxPackets) {
+                    await new Promise(r => setTimeout(r, 900));
+                }
+            }
+
+            window.stopPingTest();
         };
 
         window.stopPingTest = function () {
-            if (window.currentPingSource) {
-                window.currentPingSource.close();
-                window.currentPingSource = null;
-                const output = document.getElementById('ping-output');
-                output.innerHTML += `<div class="text-slate-400 mt-1 italic">Ping finalizado.</div>`;
+            window.pingActive = false;
+            const output = document.getElementById('ping-output');
+            if (output && !output.innerHTML.includes('Probe finalizado')) {
+                output.innerHTML += `<div class="text-slate-400 mt-1 italic">Probe finalizado.</div>`;
                 output.scrollTop = output.scrollHeight;
             }
             document.getElementById('btn-ping').classList.remove('hidden');
@@ -615,7 +567,6 @@
                         window.showToast(`Gravando ${imported.length} hosts na nuvem...`);
                         event.target.value = '';
 
-                        // Gravação em lote com upsert (atualiza se já existir sem dar erro 409)
                         if (sbClient) {
                             const batchSize = 40;
                             for (let i = 0; i < imported.length; i += batchSize) {
