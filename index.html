@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA PLAY IPAM</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        noc: {
+                            bg: '#04080e',
+                            panel: 'rgba(6, 15, 25, 0.85)',
+                            border: 'rgba(16, 185, 129, 0.18)'
+                        },
+                        status: {
+                            online: '#10b981',
+                            matrix: '#05ff91',
+                            warning: '#f59e0b',
+                            danger: '#f43f5e',
+                            info: '#06b6d4',
+                            purple: '#8b5cf6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Fontes e Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS Customizado -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+        :root {
+            --noc-bg: #04080e;
+            --noc-panel: rgba(6, 15, 25, 0.85);
+            --noc-border: rgba(16, 185, 129, 0.18);
+            --noc-text: #94a3b8;
+            --noc-heading: #f8fafc;
+
+            /* Matrix Status Colors */
+            --status-online: #10b981;
+            --status-matrix: #05ff91;
+            --status-warning: #f59e0b;
+            --status-danger: #f43f5e;
+            --status-info: #06b6d4;
+            --status-purple: #8b5cf6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--noc-bg);
+            color: var(--noc-text);
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Panel - Matrix Edition */
+        .glass-panel {
+            background: var(--noc-panel);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--noc-border);
+            border-radius: 1rem;
+            /* rounded-2xl */
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        /* High Density Table */
+        .table-dense {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table-dense th {
+            background: rgba(4, 8, 14, 0.95);
+            color: var(--status-matrix);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.5rem 0.75rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--noc-border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table-dense td {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.75rem;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+            vertical-align: middle;
+        }
+
+        .table-dense tr {
+            transition: background-color 0.15s ease;
+        }
+
+        .table-dense tr:hover {
+            background-color: rgba(16, 185, 129, 0.08);
+        }
+
+        /* Typography Helpers */
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Badges / Pills */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .status-badge.role-sw {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--status-purple);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .status-badge.role-ap {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--status-online);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-badge.role-st {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--status-warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .status-badge.role-term {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--status-info);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+
+        /* Custom Scrollbar Slim */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--noc-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.5);
+        }
+
+        /* Action Buttons Compact */
+        .btn-action {
+            background: transparent;
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            color: var(--noc-text);
+            border-radius: 4px;
+            padding: 0.25rem 0.4rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-action:hover {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--noc-heading);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-action.primary:hover {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--status-info);
+            border-color: var(--status-info);
+        }
+
+        .btn-action.success:hover {
+            background: rgba(5, 255, 145, 0.15);
+            color: var(--status-matrix);
+            border-color: var(--status-matrix);
+        }
+
+        /* Loader */
+        .noc-loader {
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(16, 185, 129, 0.1);
+            border-top-color: var(--status-matrix);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Inputs & Formula Bar */
+        input,
+        select,
+        textarea {
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid var(--noc-border) !important;
+            color: var(--noc-heading) !important;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--status-matrix) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 1px rgba(5, 255, 145, 0.2) !important;
+        }
+
+        /* Header Pulse (Torre) */
+        .tower-pulse {
+            animation: tower-glow 2s infinite;
+        }
+
+        @keyframes tower-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 8px rgba(5, 255, 145, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 16px rgba(5, 255, 145, 0.6);
+            }
+        }
+    </style>
+
+    <!-- Dependências Externas -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="min-h-screen flex flex-col antialiased relative selection:bg-status-matrix selection:text-black">
+
+    <!-- Fundo Matrix Interativo -->
+    <canvas id="cyberCanvas" class="fixed inset-0 z-0 pointer-events-none opacity-80"></canvas>
+
+    <!-- Header Limpo -->
+    <header
+        class="glass-panel sticky top-0 z-40 border-b border-noc-border !rounded-none !border-t-0 !border-l-0 !border-r-0">
+        <div
+            class="max-w-[1800px] mx-auto px-4 sm:px-6 py-2.5 flex flex-col md:flex-row items-center justify-between gap-4">
+
+            <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center space-x-3">
+                    <div
+                        class="w-8 h-8 rounded-lg bg-status-matrix/10 border border-status-matrix/30 flex items-center justify-center tower-pulse">
+                        <i class="fa-solid fa-tower-broadcast text-status-matrix text-sm"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h1 class="text-sm font-bold tracking-wide text-slate-100 uppercase">
+                                SISTEMA <span class="text-status-matrix">PLAY</span> IPAM
+                            </h1>
+                        </div>
+                        <p class="text-[10px] text-slate-500 font-mono tracking-tight flex items-center gap-1.5">
+                            Catálogo Unificado & Topologia Neural L2
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões Superiores Limpos -->
+            <div class="flex items-center space-x-2 w-full md:w-auto justify-between sm:justify-end text-xs font-mono">
+                <button onclick="document.getElementById('fileUpload').click()"
+                    class="px-3 py-1.5 rounded bg-transparent text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-noc-border transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-file-csv"></i>
+                    <span>IMPORT PLANILHA</span>
+                </button>
+                <input type="file" id="fileUpload" class="hidden" accept=".ods,.xlsx,.csv"
+                    onchange="window.handleFileSelect(event)">
+
+                <button onclick="window.syncSupabase(true)"
+                    class="px-3 py-1.5 rounded bg-status-matrix/10 hover:bg-status-matrix/20 text-status-matrix transition border border-status-matrix/30 flex items-center space-x-1.5"
+                    title="Sincronizar Supabase Realtime">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span class="hidden sm:inline">SYNC NUVEM</span>
+                </button>
+
+                <button onclick="window.exportCSV()"
+                    class="px-3 py-1.5 rounded bg-transparent hover:bg-white/5 text-slate-400 hover:text-white transition border border-noc-border flex items-center space-x-1.5">
+                    <i class="fa-solid fa-download"></i>
+                    <span>EXPORT CSV</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-1 max-w-[1800px] w-full mx-auto px-3 sm:px-4 py-4 space-y-4 relative z-10 flex flex-col">
+
+        <!-- Métricas NOC Grid Compacto -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="glass-panel rounded-lg p-3 flex items-center justify-between border-l-2 border-l-status-matrix">
+                <div>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase font-mono">Total Hosts</p>
+                    <h3 id="stat-total" class="text-lg font-semibold text-slate-200 mt-0.5 font-mono">0</h3>
+                </div>
+                <div class="text-status-matrix/50 text-lg">
+                    <i class="fa-solid fa-server"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-lg p-3 flex items-center justify-between border-l-2 border-l-status-online">
+                <div>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase font-mono">Online Probe</p>
+                    <h3 id="stat-online" class="text-lg font-semibold text-status-online mt-0.5 font-mono">0</h3>
+                </div>
+                <div class="text-status-online/50 text-lg">
+                    <i class="fa-solid fa-check-circle"></i>
+                </div>
+            </div>
+
+            <div
+                class="glass-panel rounded-lg p-3 flex items-center justify-between border-l-2 border-l-status-warning">
+                <div>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase font-mono">Torres / PoPs</p>
+                    <h3 id="stat-pops" class="text-lg font-semibold text-status-warning mt-0.5 font-mono">0</h3>
+                </div>
+                <div class="text-status-warning/50 text-lg">
+                    <i class="fa-solid fa-tower-cell"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-lg p-3 flex items-center justify-between border-l-2 border-l-status-purple">
+                <div>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase font-mono">Sub-redes L3</p>
+                    <h3 id="stat-subnets" class="text-lg font-semibold text-status-purple mt-0.5 font-mono">0</h3>
+                </div>
+                <div class="text-status-purple/50 text-lg">
+                    <i class="fa-solid fa-sitemap"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout Master 65/35 -->
+        <div class="flex flex-col lg:flex-row gap-4 items-start">
+
+            <!-- Coluna Principal 65% (Filtros + Tabela) -->
+            <div class="w-full lg:w-[65%] space-y-4">
+
+                <!-- Barra de Fórmulas e Filtros Panorâmicos -->
+                <div class="glass-panel rounded-lg p-3 flex flex-col gap-3">
+                    <div class="relative w-full flex items-center">
+                        <div
+                            class="bg-black/40 border border-noc-border border-r-0 rounded-l px-3 py-1.5 text-xs font-mono text-status-matrix italic">
+                            $f_x$
+                        </div>
+                        <input type="text" id="search-input" onkeyup="window.applyFilters()"
+                            placeholder=" IP_ADDR / HOST_NAME / POP..."
+                            class="w-full bg-black/20 border border-noc-border rounded-r text-xs px-3 py-1.5 font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-status-matrix transition">
+                    </div>
+
+                    <!-- Container de pílulas multilinhas -->
+                    <div class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto custom-scrollbar" id="subnet-pills">
+                        <!-- Subnets renderizadas via JS -->
+                    </div>
+                </div>
+
+                <!-- Tabela de Alta Densidade -->
+                <div class="glass-panel rounded-lg overflow-hidden border border-noc-border flex flex-col h-[600px]">
+                    <div class="bg-black/40 px-3 py-2 flex items-center justify-between border-b border-noc-border">
+                        <div class="flex items-center space-x-2 text-slate-300 font-medium text-xs">
+                            <i class="fa-solid fa-table-list text-status-matrix"></i>
+                            <span>Catálogo de Hosts</span>
+                        </div>
+                        <div class="text-[10px] font-mono text-slate-500">
+                            Exibindo: <span id="showing-count" class="text-status-matrix font-bold">0</span> / <span
+                                id="total-count" class="text-slate-400">0</span>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-auto">
+                        <table class="table-dense min-w-[700px]">
+                            <thead>
+                                <tr>
+                                    <th class="w-8 text-center">#</th>
+                                    <th>Endereço IP</th>
+                                    <th>Equipamento</th>
+                                    <th>Sub-rede</th>
+                                    <th>POP/Torre</th>
+                                    <th>SSID/Info</th>
+                                    <th class="text-center w-56">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ip-table-body" class="font-mono text-slate-300">
+                                <!-- Linhas renderizadas via JS -->
+                            </tbody>
+                        </table>
+                        <div id="empty-state"
+                            class="hidden flex-col items-center justify-center py-20 text-center font-mono text-slate-500">
+                            <i class="fa-solid fa-database text-2xl mb-2 opacity-50"></i>
+                            <p class="text-xs">> DATASET VAZIO.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Lateral Fixa 35% (L2 Trace + Probe) -->
+            <div class="w-full lg:w-[35%] space-y-4 sticky top-[80px]">
+
+                <!-- Card da Cadeia L2 -->
+                <div class="glass-panel rounded-lg p-4 border border-noc-border">
+                    <div class="flex items-center justify-between border-b border-noc-border pb-2 mb-3">
+                        <div class="flex items-center space-x-2 text-slate-200 text-xs font-semibold">
+                            <i class="fa-solid fa-diagram-project text-status-matrix"></i>
+                            <span>Topologia L2 Link Path</span>
+                        </div>
+                        <span id="trace-badge"
+                            class="text-[9px] font-mono text-status-matrix bg-status-matrix/10 border border-status-matrix/20 px-1.5 py-0.5 rounded">IDLE</span>
+                    </div>
+
+                    <div id="traceOutputContainer" class="min-h-[140px]">
+                        <div
+                            class="flex items-center justify-center h-full text-[10px] font-mono text-slate-500 opacity-70">
+                            Selecione [Enlace] no catálogo para traçar a malha
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card de Probe HTTP/ICMP -->
+                <div class="glass-panel rounded-lg p-4 border border-noc-border flex flex-col h-[400px]">
+                    <div class="flex items-center justify-between border-b border-noc-border pb-2 mb-3">
+                        <div class="flex items-center space-x-2 text-slate-200 text-xs font-semibold">
+                            <i class="fa-solid fa-terminal text-status-matrix"></i>
+                            <span>Web Probe Console</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-1.5 mb-2">
+                        <input type="text" id="ping-input" placeholder="0.0.0.0"
+                            class="flex-1 bg-black/40 text-status-matrix px-2 py-1 rounded border border-noc-border text-xs font-mono">
+                        <select id="ping-type"
+                            class="bg-black/40 text-slate-300 px-1 py-1 rounded border border-noc-border text-[10px] font-mono">
+                            <option value="4">4 PKT</option>
+                            <option value="continuous">CONT</option>
+                        </select>
+                        <button id="btn-ping" onclick="window.runPingTest()"
+                            class="bg-status-matrix/10 hover:bg-status-matrix/20 text-status-matrix border border-status-matrix/30 px-3 py-1 rounded font-mono text-[10px] transition font-bold">START</button>
+                        <button id="btn-stop-ping" onclick="window.stopPingTest()"
+                            class="bg-status-danger/10 hover:bg-status-danger/20 text-status-danger border border-status-danger/30 px-3 py-1 rounded font-mono text-[10px] transition font-bold hidden">STOP</button>
+                    </div>
+
+                    <div id="ping-output"
+                        class="flex-1 overflow-y-auto bg-[#020408] p-2.5 rounded text-[10px] space-y-1 border border-noc-border font-mono text-slate-400">
+                        > AGUARDANDO ALVO...
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Gaveta Lateral: Diário de Bordo (Ocorrências) -->
+    <div id="drawer-comments" class="fixed inset-0 z-50 overflow-hidden hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onclick="window.closeCommentsDrawer()"></div>
+        <div class="fixed inset-y-0 right-0 max-w-sm flex">
+            <div
+                class="w-screen glass-panel border-l border-noc-border p-5 flex flex-col justify-between shadow-2xl !rounded-l-2xl !rounded-r-none">
+                <div>
+                    <div class="flex items-center justify-between border-b border-noc-border pb-3 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-clipboard-list text-status-matrix text-lg"></i>
+                            <div>
+                                <h3 id="drawer-host-title" class="text-xs font-semibold text-slate-200">EQUIPAMENTO</h3>
+                                <p id="drawer-host-ip" class="text-[10px] font-mono text-slate-500">0.0.0.0</p>
+                            </div>
+                        </div>
+                        <button onclick="window.closeCommentsDrawer()"
+                            class="text-slate-500 hover:text-slate-300 text-sm">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-2">
+                        <p class="text-[10px] uppercase font-mono font-semibold text-slate-600">Histórico de Ocorrências
+                        </p>
+                        <div id="comments-list"
+                            class="max-h-[60vh] overflow-y-auto space-y-2 pr-1 font-sans text-xs custom-scrollbar">
+                            <!-- Logs injetados via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-noc-border space-y-2">
+                    <input type="text" id="comment-author" placeholder="Autor (ex: NOC - Lucas)"
+                        class="w-full bg-black/30 border border-noc-border rounded px-2.5 py-1.5 text-xs text-slate-200">
+                    <textarea id="comment-text" rows="3" placeholder="Descrição da ocorrência..."
+                        class="w-full bg-black/30 border border-noc-border rounded px-2.5 py-1.5 text-xs text-slate-200 resize-none"></textarea>
+                    <button onclick="window.saveComment()"
+                        class="w-full py-2 bg-status-matrix/10 hover:bg-status-matrix/20 text-status-matrix font-semibold rounded text-xs transition border border-status-matrix/30">
+                        Commit Registro
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalhes -->
+    <div id="modal-details"
+        class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
+        <div class="glass-panel rounded-2xl max-w-sm w-full p-5 space-y-4 relative border border-noc-border">
+            <button onclick="window.closeModal('modal-details')"
+                class="absolute top-3 right-3 text-slate-500 hover:text-slate-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="border-b border-noc-border pb-3">
+                <h3 id="details-title" class="text-sm font-semibold text-slate-200">Hostname</h3>
+                <p id="details-ip-subtitle" class="text-xs font-mono text-status-matrix">0.0.0.0</p>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                <div class="bg-black/20 p-2 rounded border border-noc-border"><span
+                        class="text-[9px] text-slate-500 block">USER</span><span id="det-user"
+                        class="text-slate-300">-</span></div>
+                <div class="bg-black/20 p-2 rounded border border-noc-border"><span
+                        class="text-[9px] text-slate-500 block">PASS</span><span id="det-pass"
+                        class="text-slate-300">-</span></div>
+                <div class="bg-black/20 p-2 rounded border border-noc-border"><span
+                        class="text-[9px] text-slate-500 block">VENDOR</span><span id="det-marca"
+                        class="text-slate-300">-</span></div>
+                <div class="bg-black/20 p-2 rounded border border-noc-border"><span
+                        class="text-[9px] text-slate-500 block">MODEL</span><span id="det-modelo"
+                        class="text-slate-300">-</span></div>
+                <div class="col-span-2 bg-black/20 p-2 rounded border border-noc-border"><span
+                        class="text-[9px] text-slate-500 block">COMMUNITY</span><span id="det-community"
+                        class="text-slate-300">-</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+    <script>
+            // cyber-bg.js - Fundo animado futurista (Rede Neural / Malha L2)
+
+            (function initCyberBackground() {
+                const canvas = document.getElementById('cyberCanvas');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                let w, h, particles = [];
+
+                // Mouse Interaction
+                const mouse = { x: -1000, y: -1000, isActive: false };
+
+                window.addEventListener('mousemove', (e) => {
+                    mouse.x = e.clientX;
+                    mouse.y = e.clientY;
+                    mouse.isActive = true;
+                });
+
+                window.addEventListener('mouseleave', () => {
+                    mouse.isActive = false;
+                    mouse.x = -1000;
+                    mouse.y = -1000;
+                });
+
+                function resize() {
+                    w = canvas.width = window.innerWidth;
+                    h = canvas.height = window.innerHeight;
+                }
+
+                window.addEventListener('resize', resize);
+                resize();
+
+                // Criação inicial das partículas (densidade média para performance)
+                for (let i = 0; i < 70; i++) {
+                    particles.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        vx: (Math.random() - 0.5) * 0.4,
+                        vy: (Math.random() - 0.5) * 0.4,
+                        radius: Math.random() * 1.5 + 0.5
+                    });
+                }
+
+                function draw() {
+                    ctx.clearRect(0, 0, w, h);
+
+                    // Base color for normal nodes
+                    ctx.fillStyle = 'rgba(5, 255, 145, 0.4)';
+
+                    particles.forEach((p, index) => {
+                        // Movimentação
+                        p.x += p.vx;
+                        p.y += p.vy;
+
+                        // Rebote nas bordas
+                        if (p.x < 0 || p.x > w) p.vx *= -1;
+                        if (p.y < 0 || p.y > h) p.vy *= -1;
+
+                        // Interação com o Mouse (Atração)
+                        if (mouse.isActive) {
+                            const dx = mouse.x - p.x;
+                            const dy = mouse.y - p.y;
+                            const distToMouse = Math.hypot(dx, dy);
+
+                            if (distToMouse < 200) {
+                                // Puxa levemente em direção ao mouse
+                                p.x += dx * 0.003;
+                                p.y += dy * 0.003;
+
+                                // Desenha linha até o cursor
+                                ctx.beginPath();
+                                ctx.strokeStyle = `rgba(5, 255, 145, ${0.25 - (distToMouse / 800)})`;
+                                ctx.moveTo(p.x, p.y);
+                                ctx.lineTo(mouse.x, mouse.y);
+                                ctx.stroke();
+                            }
+                        }
+
+                        // Desenhar partícula (Nó)
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Desenhar linhas de conexão orgânicas entre nós
+                        for (let j = index + 1; j < particles.length; j++) {
+                            const p2 = particles[j];
+                            const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                            if (dist < 120) {
+                                ctx.beginPath();
+                                // Gradiente de opacidade sutil
+                                ctx.strokeStyle = `rgba(5, 255, 145, ${0.1 - (dist / 1200)})`;
+                                ctx.moveTo(p.x, p.y);
+                                ctx.lineTo(p2.x, p2.y);
+                                ctx.stroke();
+                            }
+                        }
+                    });
+                    requestAnimationFrame(draw);
+                }
+
+                draw();
+            })();
+    </script>
+    <script>
+        // js/main.js - Lógica Principal do Sistema PLAY IPAM
+
+        const SUPABASE_URL = "https://stkjuqcjlqgtrwmktixt.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0a2p1cWNqbHFndHJ3bWt0aXh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODQxMTEsImV4cCI6MjEwMzI2MDExMX0.qI8nQGOA-QQKCMeKb5yLHYgzQD7nuul18L5MtNkx3s4";
+
+        const sbClient = (window.supabase && typeof window.supabase.createClient === 'function')
+            ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+            : null;
+
+        let ipDatabase = [];
+        let selectedSubnet = "ALL";
+        window.pingActive = false;
+        let currentDrawerIp = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const cached = localStorage.getItem("PLAY_IPAM_PERSISTED");
+            if (cached) {
+                try { ipDatabase = JSON.parse(cached); } catch (e) { }
+            }
+
+            window.renderSubnetPills();
+            window.renderCatalog();
+            window.updateMetrics();
+
+            await window.syncSupabase(false);
+
+            if (sbClient) {
+                try {
+                    sbClient.channel('realtime_sync')
+                        .on('postgres_changes', { event: '*', schema: 'public', table: 'radio_hosts' }, () => {
+                            window.syncSupabase(false);
+                        })
+                        .on('postgres_changes', { event: '*', schema: 'public', table: 'host_comments' }, () => {
+                            if (currentDrawerIp) window.loadCommentsForHost(currentDrawerIp);
+                        })
+                        .subscribe();
+                } catch (e) { console.warn("Erro no Realtime", e); }
+            }
+        });
+
+        // ==========================
+        // FUNÇÕES DE REDE E UI
+        // ==========================
+
+        window.openDeviceWeb = function (ip, marcaOuNome) {
+            const m = (marcaOuNome || '').toLowerCase();
+            let targetUrl = '';
+            if (m.includes('mikrotik') || m.includes('routeros') || m.includes('swt') || m.startsWith('sw')) {
+                targetUrl = `http://${ip}`;
+            } else {
+                targetUrl = `https://${ip}:8074`;
+            }
+            window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        };
+
+        window.syncSupabase = async function (showFeedback = false) {
+            if (!sbClient) return;
+            try {
+                if (showFeedback) window.showToast('Sincronizando com nuvem...');
+                const { data, error } = await sbClient.from('radio_hosts').select('*').order('ip', { ascending: true }).limit(5000);
+
+                if (!error && Array.isArray(data) && data.length > 0) {
+                    ipDatabase = data.map(item => ({
+                        ip: item.ip,
+                        name: item.name || '',
+                        user: item.user_name || 'admin',
+                        pass: item.password || 'play8074',
+                        marca: item.marca || 'Ubiquiti',
+                        community: item.community || 'k1239q!$f',
+                        modelo: item.modelo || '',
+                        pop: item.pop || '',
+                        role: item.role || 'HOST',
+                        freq: item.freq || '',
+                        ssid: item.ssid || '',
+                        subnet: item.subnet || ''
+                    }));
+
+                    localStorage.setItem("PLAY_IPAM_PERSISTED", JSON.stringify(ipDatabase));
+                    window.renderSubnetPills();
+                    window.renderCatalog();
+                    window.updateMetrics();
+                    if (showFeedback) window.showToast(`${data.length} hosts sincronizados.`);
+                }
+            } catch (err) {
+                console.warn("Offline. Mantendo cache local.", err);
+            }
+        };
+
+        window.renderSubnetPills = function () {
+            const dataSubnets = [...new Set(ipDatabase.map(item => item.subnet))].filter(Boolean).sort();
+            const container = document.getElementById('subnet-pills');
+            if (!container) return;
+
+            container.innerHTML = ["ALL", ...dataSubnets].map(s => `
+        <button onclick="window.setSubnetFilter('${s}')" class="px-2 py-1.5 rounded text-[10px] font-mono transition border ${selectedSubnet === s ? 'bg-status-matrix text-black border-status-matrix font-bold shadow-[0_0_10px_rgba(5,255,145,0.4)]' : 'bg-black/20 text-slate-400 hover:text-slate-200 border-noc-border hover:border-slate-500'}">
+            ${s === 'ALL' ? 'RESET FILTRO' : s}
+        </button>
+    `).join('');
+        };
+
+        window.setSubnetFilter = function (subnet) {
+            selectedSubnet = subnet;
+            window.renderSubnetPills();
+            window.renderCatalog();
+        };
+
+        window.renderCatalog = function () {
+            const searchVal = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
+            const filtered = ipDatabase.filter(item => {
+                const matchesSearch = !searchVal || item.ip.toLowerCase().includes(searchVal) || item.name.toLowerCase().includes(searchVal) || (item.pop && item.pop.toLowerCase().includes(searchVal)) || (item.ssid && item.ssid.toLowerCase().includes(searchVal));
+                const matchesSubnet = selectedSubnet === 'ALL' || item.subnet === selectedSubnet;
+                return matchesSearch && matchesSubnet;
+            });
+
+            const showingCount = document.getElementById('showing-count');
+            const totalCount = document.getElementById('total-count');
+            if (showingCount) showingCount.innerText = filtered.length;
+            if (totalCount) totalCount.innerText = ipDatabase.length;
+
+            const tableBody = document.getElementById('ip-table-body');
+            const emptyState = document.getElementById('empty-state');
+
+            if (!tableBody) return;
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = '';
+                if (emptyState) emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            } else {
+                if (emptyState) emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+            }
+
+            tableBody.innerHTML = filtered.map((item, index) => {
+                const roleBadge = window.getRoleBadge(item.role, item.name);
+                const marcaDesc = item.marca || item.role || item.name;
+
+                return `
+            <tr class="cursor-pointer group" onclick="window.openDetailsModal('${item.ip}')">
+                <td class="text-center text-[10px] text-slate-600">${index + 1}</td>
+                <td class="font-bold text-slate-300 group-hover:text-status-matrix transition">
+                    <div class="flex items-center space-x-1.5">
+                        <button onclick="event.stopPropagation(); window.copyToClipboard('${item.ip}')" class="text-slate-500 hover:text-status-matrix transition" title="Copiar"><i class="fa-regular fa-copy"></i></button>
+                        <span>${item.ip}</span>
+                    </div>
+                </td>
+                <td class="font-sans text-slate-200">
+                    <div class="flex items-center space-x-2">
+                        <span class="truncate max-w-[140px]" title="${item.name}">${item.name}</span>
+                        ${roleBadge}
+                    </div>
+                </td>
+                <td class="text-[10px] text-slate-400">${item.subnet}</td>
+                <td class="text-xs font-sans text-slate-300">${item.pop || '-'}</td>
+                <td class="text-[10px] text-slate-400 truncate max-w-[100px]">${item.ssid ? `<span class="text-status-matrix/70">${item.ssid}</span>` : '-'}</td>
+                <td class="text-center">
+                    <div class="flex items-center justify-end space-x-1.5">
+                        <button onclick="event.stopPropagation(); window.traceL2Link('${item.ip}')" class="px-2 py-1 rounded text-[10px] font-mono transition border border-emerald-500/40 text-emerald-400 bg-emerald-950/40 hover:bg-emerald-900/60 hover:text-emerald-300 flex items-center space-x-1" title="Traçar Enlace L2">
+                            <i class="fa-solid fa-diagram-project"></i> <span>Enlace</span>
+                        </button>
+                        <button onclick="event.stopPropagation(); window.openDeviceWeb('${item.ip}', '${marcaDesc}')" class="px-2 py-1 rounded text-[10px] font-mono transition border border-cyan-500/40 text-cyan-300 bg-cyan-950/40 hover:bg-cyan-900/60 hover:text-cyan-200 flex items-center space-x-1" title="Acesso Web">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> <span>Acessar</span>
+                        </button>
+                        <button onclick="event.stopPropagation(); window.selectForPing('${item.ip}')" class="px-2 py-1 rounded text-[10px] font-mono transition border border-slate-700 text-slate-300 bg-slate-800/80 hover:bg-slate-700 hover:text-white flex items-center space-x-1" title="Ping Probe">
+                            <i class="fa-solid fa-satellite-dish"></i> <span>Ping</span>
+                        </button>
+                        <button onclick="event.stopPropagation(); window.openCommentsDrawer('${item.ip}', '${item.name}')" class="px-2 py-1 rounded text-[10px] font-mono transition border border-noc-border text-slate-400 hover:text-white hover:border-slate-500" title="Ocorrências">
+                            <i class="fa-regular fa-comment-dots"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+            }).join('');
+        };
+
+        window.getRoleBadge = function (role, name) {
+            const r = (role || '').toUpperCase(); const n = (name || '').toUpperCase();
+            if (r.includes('SW') || n.startsWith('SW')) return `<span class="status-badge role-sw">SW</span>`;
+            if (r.includes('AP') || n.startsWith('AP')) return `<span class="status-badge role-ap">AP</span>`;
+            if (r.includes('ST') || n.startsWith('ST')) return `<span class="status-badge role-st">ST</span>`;
+            return `<span class="status-badge role-term">TR</span>`;
+        };
+
+        window.traceL2Link = function (targetIp) {
+            const target = ipDatabase.find(h => h.ip === targetIp);
+            if (!target) return;
+
+            document.getElementById('trace-badge').innerText = `${target.ip}`;
+            const container = document.getElementById('traceOutputContainer');
+            const subnetHosts = ipDatabase.filter(h => h.subnet === target.subnet);
+
+            const swt = subnetHosts.find(h => h.role === 'SWT' || (h.name && h.name.toUpperCase().startsWith('SW'))) || { name: `SWT ${target.pop || 'CORE'}`, ip: target.subnet.replace('.0/24', '.2'), marca: 'MIKROTIK' };
+            const ap = subnetHosts.find(h => (h.role === 'AP' || (h.name && h.name.toUpperCase().startsWith('AP'))) && (h.ssid === target.ssid || !target.ssid)) || { name: `AP ${target.pop || 'MASTER'}`, ip: target.subnet.replace('.0/24', '.3'), ssid: target.ssid || 'PTP', freq: target.freq || '5.8G', marca: 'Ubiquiti' };
+
+            let st = null;
+            if (target.role === 'PLAY' || target.name.toUpperCase().includes('PLAY') || target.role === 'ST') {
+                st = subnetHosts.find(h => (h.role === 'ST' || (h.name && h.name.toUpperCase().startsWith('ST'))) && h.ssid && h.ssid === target.ssid && h.ip !== target.ip);
+            }
+
+            const hops = [
+                { step: 1, type: 'sw', name: swt.name, ip: swt.ip, marca: swt.marca || 'MIKROTIK', icon: 'fa-server' },
+                { step: 2, type: 'ap', name: ap.name, ip: ap.ip, marca: ap.marca || 'Ubiquiti', icon: 'fa-satellite-dish' }
+            ];
+
+            if (st && st.ip !== target.ip) { hops.push({ step: 3, type: 'st', name: st.name, ip: st.ip, marca: st.marca || 'Ubiquiti', icon: 'fa-tower-broadcast' }); }
+            hops.push({ step: hops.length + 1, type: 'term', name: target.name, ip: target.ip, marca: target.marca || 'Ubiquiti', icon: 'fa-microchip' });
+
+            container.innerHTML = `<div class="relative pl-8 py-2">
+        <div class="absolute left-3.5 top-6 bottom-6 w-[2px] border-l-2 border-dashed border-status-matrix/40"></div>
+        ${hops.map((h, i) => {
+                const isLast = i === hops.length - 1;
+                const colorClass = isLast ? 'text-status-matrix' : (h.type === 'sw' ? 'text-status-purple' : (h.type === 'ap' ? 'text-status-online' : 'text-slate-400'));
+
+                return `
+            <div class="relative flex items-center justify-between group p-3 hover:bg-black/20 rounded-lg transition-colors mb-1">
+                <div class="absolute -left-[1.5rem] w-3 h-3 rounded-full bg-noc-bg border-2 border-status-matrix group-hover:bg-status-matrix z-10 transition shadow-[0_0_8px_rgba(5,255,145,0.8)]"></div>
+                
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded bg-black/30 border border-noc-border flex items-center justify-center text-xs ${colorClass}">
+                        <i class="fa-solid ${h.icon}"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-semibold text-slate-200 group-hover:text-status-matrix transition">${h.name}</div>
+                        <div class="text-[9px] font-mono text-slate-500 uppercase mt-0.5">${h.type.toUpperCase()} · ${h.marca}</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <span class="font-mono text-[10px] ${colorClass} font-bold">${h.ip}</span>
+                    <button onclick="window.openDeviceWeb('${h.ip}', '${h.marca}')" class="text-slate-500 hover:text-status-matrix p-1.5 transition" title="Acessar">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    </button>
+                </div>
+            </div>`;
+            }).join('')}
+    </div>`;
+        };
+
+        window.selectForPing = function (ip) {
+            const input = document.getElementById('ping-input');
+            if (input) {
+                input.value = ip;
+                window.runPingTest();
+            }
+        };
+
+        function testHostLatency(ip, timeoutMs = 1500) {
+            return new Promise((resolve) => {
+                const startTime = performance.now();
+                const img = new Image();
+                let settled = false;
+
+                const cleanup = () => { img.onload = null; img.onerror = null; img.src = ''; };
+                const timer = setTimeout(() => { if (!settled) { settled = true; cleanup(); resolve({ online: false, ms: timeoutMs }); } }, timeoutMs);
+
+                img.onload = () => { if (!settled) { settled = true; clearTimeout(timer); const ms = Math.max(1, Math.round(performance.now() - startTime)); cleanup(); resolve({ online: true, ms }); } };
+                img.onerror = () => { if (!settled) { settled = true; clearTimeout(timer); const ms = Math.max(1, Math.round(performance.now() - startTime)); cleanup(); const isResponsive = ms < (timeoutMs - 100); resolve({ online: isResponsive, ms }); } };
+
+                img.src = `http://${ip}/favicon.ico?_probe=${Date.now()}`;
+            });
+        }
+
+        window.runPingTest = async function () {
+            const selectedIp = document.getElementById('ping-input')?.value.trim();
+            const pingType = document.getElementById('ping-type')?.value;
+            const output = document.getElementById('ping-output');
+
+            if (!selectedIp || !output) return;
+
+            window.pingActive = true;
+            document.getElementById('btn-ping')?.classList.add('hidden');
+            document.getElementById('btn-stop-ping')?.classList.remove('hidden');
+
+            output.innerHTML = `<div><span class="text-status-matrix">> MATRIX_PROBE</span> <span class="text-slate-300">${selectedIp}</span></div>`;
+
+            let packetsSent = 0;
+            const maxPackets = pingType === 'continuous' ? Infinity : parseInt(pingType);
+
+            while (window.pingActive && packetsSent < maxPackets) {
+                packetsSent++;
+                const res = await testHostLatency(selectedIp, 1400);
+
+                if (res.online) {
+                    output.innerHTML += `<div>Reply from <span class="text-slate-300">${selectedIp}</span>: time=<span class="text-status-matrix">${res.ms}ms</span></div>`;
+                } else {
+                    output.innerHTML += `<div class="text-status-danger">Request timed out for ${selectedIp}</div>`;
+                }
+
+                output.scrollTop = output.scrollHeight;
+                if (window.pingActive && packetsSent < maxPackets) {
+                    await new Promise(r => setTimeout(r, 900));
+                }
+            }
+
+            window.stopPingTest();
+        };
+
+        window.stopPingTest = function () {
+            window.pingActive = false;
+            const output = document.getElementById('ping-output');
+            if (output && !output.innerHTML.includes('EOF')) {
+                output.innerHTML += `<div class="text-slate-500 mt-1 italic">> EOF.</div>`;
+                output.scrollTop = output.scrollHeight;
+            }
+            document.getElementById('btn-ping')?.classList.remove('hidden');
+            document.getElementById('btn-stop-ping')?.classList.add('hidden');
+        };
+
+        // ==========================
+        // GAVETAS E MODAIS
+        // ==========================
+
+        window.openCommentsDrawer = function (ip, name) {
+            currentDrawerIp = ip;
+            document.getElementById('drawer-host-title').innerText = name || 'EQUIPAMENTO';
+            document.getElementById('drawer-host-ip').innerText = ip;
+            document.getElementById('drawer-comments').classList.remove('hidden');
+            window.loadCommentsForHost(ip);
+        };
+
+        window.closeCommentsDrawer = function () {
+            document.getElementById('drawer-comments').classList.add('hidden');
+            currentDrawerIp = null;
+        };
+
+        window.loadCommentsForHost = async function (ip) {
+            const list = document.getElementById('comments-list');
+            list.innerHTML = `<div class="flex justify-center py-4"><div class="noc-loader"></div></div>`;
+            if (!sbClient) return;
+
+            try {
+                const { data, error } = await sbClient.from('host_comments').select('*').eq('ip', ip).order('created_at', { ascending: false });
+                if (!error && Array.isArray(data) && data.length > 0) {
+                    list.innerHTML = data.map(c => `
+                <div class="bg-black/20 border border-noc-border border-l-2 border-l-status-matrix p-2.5 rounded-r">
+                    <div class="flex items-center justify-between text-[10px]">
+                        <span class="font-semibold text-status-matrix">${c.author || 'NOC'}</span>
+                        <span class="text-slate-500 font-mono">${new Date(c.created_at).toLocaleDateString()} ${new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mt-1">${c.comment}</p>
+                </div>
+            `).join('');
+                } else {
+                    list.innerHTML = `<p class="text-slate-500 italic text-xs text-center py-4">> NO LOGS FOUND.</p>`;
+                }
+            } catch (e) {
+                list.innerHTML = `<p class="text-status-danger text-xs">Erro de conexão DB.</p>`;
+            }
+        };
+
+        window.saveComment = async function () {
+            if (!currentDrawerIp || !sbClient) return;
+            const author = document.getElementById('comment-author').value.trim() || 'NOC';
+            const comment = document.getElementById('comment-text').value.trim();
+
+            if (!comment) return;
+
+            try {
+                const { error } = await sbClient.from('host_comments').insert([{ ip: currentDrawerIp, author, comment }]);
+                if (!error) {
+                    document.getElementById('comment-text').value = '';
+                    window.loadCommentsForHost(currentDrawerIp);
+                }
+            } catch (e) { }
+        };
+
+        // ==========================
+        // OUTROS E UTILITÁRIOS
+        // ==========================
+
+        window.handleFileSelect = function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            window.showToast('Compilando planilha...');
+            const reader = new FileReader();
+
+            reader.onload = async function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const imported = [];
+
+                    workbook.SheetNames.forEach(sheetName => {
+                        const jsonRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+                        jsonRows.forEach(row => {
+                            if (!row || !Array.isArray(row) || row.length < 2) return;
+
+                            let ipFound = null;
+                            let ipColIdx = -1;
+                            for (let i = 0; i < row.length; i++) {
+                                const val = String(row[i] || '').trim();
+                                const match = val.match(/\b(?:172\.(?:1[6-9]|2[0-9]|3[01])|10\.\d{1,3}|192\.168|38\.190)\.\d{1,3}\.\d{1,3}\b/);
+                                if (match) {
+                                    ipFound = match[0];
+                                    ipColIdx = i;
+                                    break;
+                                }
+                            }
+
+                            if (ipFound) {
+                                const octs = ipFound.split('.');
+                                const name = ipColIdx > 0 ? String(row[0] || '').trim() : `HOST_${octs[3]}`;
+                                imported.push({
+                                    ip: ipFound,
+                                    name: name || `HOST_${octs[3]}`,
+                                    user_name: String(row[2] || 'admin').trim(),
+                                    password: String(row[3] || 'play8074').trim(),
+                                    marca: String(row[4] || 'Ubiquiti').trim(),
+                                    community: String(row[5] || 'k1239q!$f').trim(),
+                                    modelo: String(row[6] || '').trim(),
+                                    pop: String(row[7] || sheetName).trim(),
+                                    role: String(row[8] || 'HOST').trim(),
+                                    freq: String(row[9] || '').trim(),
+                                    ssid: String(row[11] || row[12] || '').trim(),
+                                    subnet: `${octs[0]}.${octs[1]}.${octs[2]}.0/24`
+                                });
+                            }
+                        });
+                    });
+
+                    if (imported.length > 0) {
+                        event.target.value = '';
+                        if (sbClient) {
+                            const batchSize = 40;
+                            for (let i = 0; i < imported.length; i += batchSize) {
+                                const chunk = imported.slice(i, i + batchSize);
+                                await sbClient.from('radio_hosts').upsert(chunk, { onConflict: 'ip' });
+                            }
+                            await window.syncSupabase(false);
+                            window.showToast(`${imported.length} hosts commitados DB.`);
+                        }
+                    }
+                } catch (err) {
+                    window.showToast('Erro ao ler XLSX/CSV', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        window.openDetailsModal = function (ip) {
+            const item = ipDatabase.find(h => h.ip === ip);
+            if (!item) return;
+            document.getElementById('details-title').innerText = item.name;
+            document.getElementById('details-ip-subtitle').innerText = item.ip;
+            document.getElementById('det-user').innerText = item.user || '-';
+            document.getElementById('det-pass').innerText = item.pass || '-';
+            document.getElementById('det-marca').innerText = item.marca || '-';
+            document.getElementById('det-modelo').innerText = item.modelo || '-';
+            document.getElementById('det-community').innerText = item.community || '-';
+            document.getElementById('modal-details').classList.remove('hidden');
+        };
+
+        window.closeModal = function (modalId) { document.getElementById(modalId).classList.add('hidden'); };
+        window.applyFilters = function () { window.renderCatalog(); };
+        window.resetFilters = function () {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.value = '';
+            selectedSubnet = 'ALL';
+            window.renderSubnetPills();
+            window.renderCatalog();
+        };
+
+        window.updateMetrics = function () {
+            const sTotal = document.getElementById('stat-total');
+            const sOnline = document.getElementById('stat-online');
+            const sPops = document.getElementById('stat-pops');
+            const sSubnets = document.getElementById('stat-subnets');
+
+            if (sTotal) sTotal.innerText = ipDatabase.length;
+            if (sOnline) sOnline.innerText = ipDatabase.length;
+            if (sPops) sPops.innerText = new Set(ipDatabase.map(i => i.pop)).size;
+            if (sSubnets) sSubnets.innerText = new Set(ipDatabase.map(i => i.subnet)).size;
+        };
+
+        window.copyToClipboard = function (text) {
+            navigator.clipboard.writeText(text);
+            window.showToast(`Copiado: ${text}`);
+        };
+
+        window.exportCSV = function () {
+            const headers = ['IP', 'Nome', 'Subrede', 'POP', 'Role', 'SSID', 'Frequencia', 'Modelo', 'Marca', 'Comunidade'];
+            const rows = ipDatabase.map(i => [i.ip, `"${i.name}"`, i.subnet, `"${i.pop || ''}"`, `"${i.role || ''}"`, `"${i.ssid || ''}"`, `"${i.freq || ''}"`, `"${i.modelo || ''}"`, `"${i.marca || ''}"`, `"${i.community || ''}"`]);
+            const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+            const link = document.createElement('a');
+            link.setAttribute('href', encodeURI(csvContent));
+            link.setAttribute('download', `export_play_ipam_${Date.now()}.csv`);
+            document.body.appendChild(link); link.click(); link.remove();
+        };
+
+        window.showToast = function (message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            const isError = type === 'error';
+
+            toast.className = `bg-black/80 backdrop-blur-md border border-noc-border ${isError ? 'border-l-status-danger' : 'border-l-status-matrix'} border-l-2 px-3 py-2 rounded shadow-[0_0_15px_rgba(5,255,145,0.2)] text-[10px] font-mono text-slate-200 flex items-center space-x-2 transition-all duration-300 transform translate-y-2 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid ${isError ? 'fa-triangle-exclamation text-status-danger' : 'fa-check text-status-matrix'}"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 50);
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 3000);
+        };
+    </script>
+</body>
+
+</html>
